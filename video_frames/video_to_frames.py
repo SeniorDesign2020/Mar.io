@@ -42,8 +42,8 @@ def upload_to_aws(client, local_directory, bucket, destination):
 if __name__ == '__main__':
     file_name = 'video_01-13-2020-lap2'
 
-    ACCESS_KEY = 'AKIA6RPKPY2PO2ZALB5C'
-    SECRET_KEY = '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'
+    ACCESS_KEY = ''
+    SECRET_KEY = ''
     source = 'Videos/'
     destination = 'Frames/{}'.format(file_name)
     local_directory = file_name

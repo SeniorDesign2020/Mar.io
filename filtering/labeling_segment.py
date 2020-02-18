@@ -12,7 +12,7 @@ try:
 except OSError:
     print ("Creation of the directory {} failed".format(output_file)) 
 for i in range(num_images):
-    img  = cv2.imread('input_file/frame{}.jpg'.format(i))
+    img  = cv2.imread('{}/frame{}.jpg'.format(input_file,i))
     shape = np.shape(img)
     height = int(shape[0]/2)
     cropped = img[height:shape[0],:]
@@ -30,4 +30,4 @@ for i in range(num_images):
 
     dst = cv2.medianBlur(result_image,35)
 
-    cv2.imwrite('output_file/frame_{}.jpg'.format(i),dst)
+    cv2.imwrite('{}/frame_{}.jpg'.format(filtered_images,i),dst)

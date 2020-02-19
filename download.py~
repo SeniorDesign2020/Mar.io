@@ -1,0 +1,20 @@
+import os 
+import boto3
+
+filename =  input('video_name\n')
+folder_name = input('folder_name\n')
+
+ACCESS_KEY = input('acces_key\n')
+
+SECRET_KEY = input('secrete_key\n')
+
+
+
+
+    
+bucket = 'senior-design33'
+client = boto3.client('s3', aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY)
+all_objects = s3.list_objects(Bucket = bucket) 
+
+print(all_objects)
+

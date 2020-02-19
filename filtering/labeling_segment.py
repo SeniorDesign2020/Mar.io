@@ -10,7 +10,8 @@ output_file = 'filtered_images'
 try:
     os.mkdir(output_file)
 except OSError:
-    print ("Creation of the directory {} failed".format(output_file)) 
+    print ("Creation of the directory {} failed".format(output_file))
+print(num_images)
 for i in range(num_images):
     img  = cv2.imread('{}/frame{}.jpg'.format(input_file,i))
     shape = np.shape(img)
@@ -30,4 +31,4 @@ for i in range(num_images):
 
     dst = cv2.medianBlur(result_image,35)
 
-    cv2.imwrite('{}/frame_{}.jpg'.format(filtered_images,i),dst)
+    cv2.imwrite('{}/frame_{}.jpg'.format(output_file,i),dst)

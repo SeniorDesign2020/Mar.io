@@ -50,8 +50,9 @@ def filtering(filename):
     result_image = res.reshape((img.shape))
     figure_size = 15
 
-    output_image = cv2.medianBlur(result_image,35)
+    output_image = cv2.medianBlur(result_image,55)
     return output_image
+    #cv2.imwrite('fil1_image.jpg',output_image)
     
 
 if __name__ == '__main__':

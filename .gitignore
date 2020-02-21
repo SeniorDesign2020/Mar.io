@@ -18,3 +18,7 @@ logs
 
 .DS_Store
 aws.txt
+#Images
+*.jpg
+#emacs
+*~

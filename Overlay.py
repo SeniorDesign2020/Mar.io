@@ -2,116 +2,67 @@ from PIL import Image
 #import cv2
 import numpy as np
 import os 
-"""
- Function to change the image size
-def changeImageSize(maxWidth, 
-                    maxHeight, 
-                    image):
-    
-    widthRatio  = maxWidth/image.size[0]
-    heightRatio = maxHeight/image.size[1]
-    newWidth    = int(widthRatio*image.size[0])
-    newHeight   = int(heightRatio*image.size[1])
-    newImage    = image.resize((newWidth, newHeight))
-    return newImage
-"""   
 
-def img_prep(path1,path2):
-   image1= Image.open(path2)
-   image1=change(image1)
-   image2 = Image.open(path1)
-   #Image size
-   width, height = image2.size
-   #print(height,width)
+def img_prep(org_image,fil_image):
+   fil_image=fil_color_change(fil_image)
+   org_image1 = Image.open(org_image)
+   width, height = org_image1.size
 
-   image3 = image2.crop((0, 461, width-0, height-0))
-   image4 = image2.crop((0, 0, width-0, height-461))
-   image7 = image1.convert("RGBA")
-   image8 = image3.convert("RGBA")
-   return image7,image8,image4
+   org_image_bot = org_image1.crop((0, 461, width-0, height-0))
+   org_image_top = org_image1.crop((0, 0, width-0, height-461))
+   fil_image_alpha = fil_image.convert("RGBA")
+   org_image_alpha = org_image_bot.convert("RGBA")
+   return fil_image_alpha,org_image_alpha,org_image_top
 
 
-def blend(img1, img2):
-	datas = img1.getdata()
+def alpha_blend(fil_image_gr, org_image_a):
+	matrix = fil_image_gr.getdata()
 	newData=[]
-	for item in datas:
-	#print(item)
+	for item in matrix:
 		if item[0] < 100 and item[1] < 100 and item[2] < 100:
 			newData.append((0, 0, 0, 0))
 		else:
 			newData.append(item)
-		
-	img1.putdata(newData)		
-	Blend1  = Image.alpha_composite(img2,img1)	
-	return Blend1
+	fil_image_gr.putdata(newData)		
+	Overlay_bot  = Image.alpha_composite(org_image_a,fil_image_gr)	
+	return Overlay_bot
 
-def get_concat_v(im1, im2):
-	dst = Image.new('RGB', (im1.width, im1.height + im2.height))
-	dst.paste(im1, (0, 0))
-	dst.paste(im2, (0, im1.height))
-	return dst
+def img_concat_v(top_half, bot_half):
+	full_image = Image.new('RGB', (top_half.width, top_half.height + bot_half.height))
+	full_image.paste(top_half, (0, 0))
+	full_image.paste(bot_half, (0, top_half.height))
+	return full_image
 
-def change(im3):
-	matrix = np.array(im3)
-	#mask1 = np.any((matrix != [126,128,151]), axis=2)
-	#mask2 = np.any((matrix == [126,128,151]) | (matrix == [119,171,141]) | (matrix == [131,133,158]), axis=2)
-	mask3 = np.any((matrix > [100,100,100]), axis=2)
-	#matrix[np.where((matrix == [126,128,151]).all(axis=2))]=[119,251,0]
-	matrix[mask3] = np.array([0,255,0])
-	im = Image.fromarray(matrix)
-	#im.save("final.png")
-	#im.show()
-	return im
+def fil_color_change(fil_image):
+	matrix = np.array(fil_image)
+	mask = np.any((matrix > [100,100,100]), axis=2)
+	matrix[mask] = np.array([0,255,0])
+	fil_image2 = Image.fromarray(matrix)
+	return fil_image2
 
-def change_2(im4):
-	matrix1 = np.array(im4)
-	#mask1 = np.any((matrix != [126,128,151]), axis=2)
-	#mask2 = np.any((matrix == [126,128,151]) | (matrix == [119,171,141]) | (matrix == [131,133,158]), axis=2)
-	mask3 = np.any((matrix1 != [0,255,0]), axis=2)
-	#matrix[np.where((matrix == [126,128,151]).all(axis=2))]=[119,251,0]
-	matrix1[mask3] = np.array([212,198,195])
-	im1 = Image.fromarray(matrix1)
-	#im.save("final.png")
-	#im.show()
-	return im1
+def bg_color_change(full_image):
+	matrix = np.array(full_image)
+	mask = np.any((matrix != [0,255,0]), axis=2)
+	matrix[mask] = np.array([212,198,195])
+	final_img = Image.fromarray(matrix)
+	return final_img
+"""
+def a_blend(fil_image,org_image1):
+	org_image_bot = fil_image.convert("RGBA")
+	org_image_top = org_image1.convert("RGBA")
 
-def a_blend(image1,image2):
-	image3 = image1.convert("RGBA")
-	image4 = image2.convert("RGBA")
-
-	alphaBlended = Image.blend(image3, image4, alpha=.8)
+	alphaBlended = Image.alpha_blend(org_image_bot, org_image_top, alpha=.8)
 
 	return alphaBlended
-
-
-
-"""
-img1, img2,img3 = img_prep()
-img_blend = blend(img1,img2)
-#im_f = get_concat_v(image4,alphaBlended2)
-img_final = get_concat_v(img3,img_blend)
-img_final = change_2(img_final)
-#final image
-#img_final.save("frame82.png")
-plz = Image.open("frame82.JPG")
-final_image = a_blend(plz,img_final)
-final_image.show()
-final_image.save("frame82.png")
-#(im)
-#matrix[np.where((matrix == [126,128,151]).all(axis=2))]=[119,251,0]
 """
 
-def done():
-		
-	img1, img2,img3 = img_prep("frame.jpg","fil_image.jpg")
-	img_blend = blend(img1,img2)
-	img_final = get_concat_v(img3,img_blend)
-	img_final = change_2(img_final)
-	#final image
-	#img_final.save("frame82.png")
-	#work = Image.open("frame82.JPG")
-	#final_image = a_blend(work,img_final)
-	#final_image.show()
-	#final_image.save("frame82.png")
-	return img_final
-	#img_final.show()
+def done(in_image):
+	fil_image_gr, org_image_a,org_image_t = img_prep("frame.jpg",in_image)
+	overlay_half = alpha_blend(fil_image_gr,org_image_a)
+	final_img = img_concat_v(org_image_t,overlay_half)
+	final_image = bg_color_change(final_img)
+	return final_image
+	
+
+#in_image = Image.open("frame_0.jpg")
+#done(in_image)

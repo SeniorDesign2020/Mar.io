@@ -8,14 +8,16 @@ filename =  input('video_name\n')
 folder_name = input('folder_name\n')
 keys = []
 bucket = 'senior-design33'
-
+a="b"
+b="c"
 destination = 'LabelledFrames'
 if os.path.isfile('aws.txt'):
     with open('aws.txt','r') as in_file:
         line = in_file.readline()
+        line=line.strip()
         ACCESS_KEY = line
         line = in_file.readline()
-        print(line)
+        line=line.strip()
         SECRET_KEY = line
 else:
     ACCESS_KEY = input('acces_key\n')
@@ -26,7 +28,6 @@ else:
         for line in keys:
             out_file.write(line)
             out_file.write("\n")
-            
 
 s3_client = boto3.client('s3',aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY)
 
@@ -41,11 +42,17 @@ for page in pages:
         s3_client.download_file('senior-design33',obj['Key'],'frame.jpg')
         
         filtered_image = fil('frame.jpg')
-        cv2.imwrite('fil_image.jpg',filtered_image)
-        labelled_image = done()
+        image_cv2 = cv2.cvtColor(filtered_image, cv2.COLOR_BGR2RGB)
+        image_pil = Image.fromarray(image_cv2)
         #cv2.imwrite('fil_image.jpg',filtered_image)
-        labelled_image.save("labelled_image.jpg")
+        image_label=done(image_pil)
+        image_label.save('labelled_image.jpg')
+        #cv2.imwrite('fil_image.jpg',filtered_image)
+        #labelled_image.save("labelled_image.jpg")
         s3_client.upload_file('labelled_image.jpg',bucket,'LabelledFrames/{}/{}/{}'.format(filename,folder_name,frame_number))
+        os.remove("frame.jpg")
+        os.remove("labelled_image.jpg")
+
             
         
         

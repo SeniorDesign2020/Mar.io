@@ -4,6 +4,7 @@ from labeling_segment import filtering as fil
 from Overlay import done
 import cv2
 from PIL import Image
+from tqdm import tqdm
 filename =  input('video_name\n')
 folder_name = input('folder_name\n')
 keys = []
@@ -35,8 +36,8 @@ paginator = s3_client.get_paginator('list_objects')
 operation_parameters = {'Bucket': bucket,
                         'Prefix': 'Frames/{}/{}'.format(filename,folder_name)}
 pages = paginator.paginate(**operation_parameters)
-for page in pages:
-    for obj in page['Contents']:
+for page in tqdm(pages):
+    for obj in tqdm(page['Contents']):
         frame_number = obj['Key'].split('/')[-1]
 
         s3_client.download_file('senior-design33',obj['Key'],'frame.jpg')

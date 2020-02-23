@@ -39,20 +39,22 @@ pages = paginator.paginate(**operation_parameters)
 for page in tqdm(pages):
     for obj in tqdm(page['Contents']):
         frame_number = obj['Key'].split('/')[-1]
-
-        s3_client.download_file('senior-design33',obj['Key'],'frame.jpg')
-        
-        filtered_image = fil('frame.jpg')
-        image_cv2 = cv2.cvtColor(filtered_image, cv2.COLOR_BGR2RGB)
-        image_pil = Image.fromarray(image_cv2)
-        #cv2.imwrite('fil_image.jpg',filtered_image)
-        image_label=done(image_pil)
-        image_label.save('labelled_image.jpg')
-        #cv2.imwrite('fil_image.jpg',filtered_image)
-        #labelled_image.save("labelled_image.jpg")
-        s3_client.upload_file('labelled_image.jpg',bucket,'LabelledFrames/{}/{}/{}'.format(filename,folder_name,frame_number))
-        os.remove("frame.jpg")
-        os.remove("labelled_image.jpg")
+        try:
+            s3_client.download_file('senior-design33',obj['Key'],'frame.jpg')
+            
+            filtered_image = fil('frame.jpg')
+            image_cv2 = cv2.cvtColor(filtered_image, cv2.COLOR_BGR2RGB)
+            image_pil = Image.fromarray(image_cv2)
+            #cv2.imwrite('fil_image.jpg',filtered_image)
+            image_label=done(image_pil)
+            image_label.save('labelled_image.jpg')
+            #cv2.imwrite('fil_image.jpg',filtered_image)
+            #labelled_image.save("labelled_image.jpg")
+            s3_client.upload_file('labelled_image.jpg',bucket,'LabelledFrames/{}/{}/{}'.format(filename,folder_name,frame_number))
+            os.remove("frame.jpg")
+            os.remove("labelled_image.jpg")
+        except:
+            s3_client.delete_object(Bucket= bucket,Key=obj['Key'])
 
             
         

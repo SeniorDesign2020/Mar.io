@@ -44,13 +44,20 @@ for page in pages:
     for obj in tqdm(page['Contents']):
         frame_number = obj['Key'].split('/')[-1]
         s3_client.download_file('senior-design33',obj['Key'],'frame.jpg')
-        
-        filtered_image = fil('frame.jpg')
-        image_cv2 = cv2.cvtColor(filtered_image, cv2.COLOR_BGR2RGB)
-        image_pil = Image.fromarray(image_cv2)
-        
-        image_label=done(image_pil)
-        image_label.save('{}/{}'.format(folder_name,frame_number))
+        try:
+            filtered_image = fil('frame.jpg')
+            image_cv2 = cv2.cvtColor(filtered_image, cv2.COLOR_BGR2RGB)
+            image_pil = Image.fromarray(image_cv2)
+            
+            image_label=done(image_pil)
+            image_label.save('{}/{}'.format(folder_name,frame_number))
+        except:
+            key = s3_client.lookup(obj['Key'])
+            if key.size <=0:
+                s3_client.delete_object(Bucket=bucket,Key=obj['Key'])
+            else:
+                print('Cant label the frame {} \n Skipping for now'.format(frame_number))
+            
         
 
 shutil.make_archive('{}'.format(folder_name),'zip','{}'.format(folder_name))

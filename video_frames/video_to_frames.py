@@ -1,9 +1,12 @@
 import cv2
 import os
 import boto3
+import shutil
+import tqdm
 from botocore.exceptions import NoCredentialsError
 
 def FrameCapture(file_name):
+    folders = []
     vid = cv2.VideoCapture(file_name + '.mp4')
     os.mkdir('{}'.format(file_name))
     count = 0
@@ -13,9 +16,18 @@ def FrameCapture(file_name):
         if count % 7200 == 0:
             folderCount += 1
             os.mkdir('{}/folder{}'.format(file_name,folderCount))
+            folders.append('{}/folder{}'.format(file_name,folderCount))
         success, image = vid.read()
         cv2.imwrite('{}/folder{}/frame{}.jpg'.format(file_name,folderCount,count), image)
         count += 1
+    zip_folders(folders)
+
+def zip_folders(folders):
+    print('Zipping...')
+    for folder in tqdm(folders):
+        shutil.make_archive('{}'.format(folder),'zip','{}'.format(folder_name))
+        shutil.rmtree('{}'.format(folder))
+        
 
 def upload_to_aws(client, local_directory, bucket, destination):
     for root, dirs, files in os.walk(local_directory):
@@ -40,10 +52,26 @@ def upload_to_aws(client, local_directory, bucket, destination):
                 client.upload_file(local_path, bucket, s3_path)
 
 if __name__ == '__main__':
-    file_name = 'video_01-13-2020-lap2'
 
-    ACCESS_KEY = ''
-    SECRET_KEY = ''
+    file_name = input('video_name')
+    keys = []
+    if os.path.isfile('aws.txt') as in_file:
+        line = in_file.readline()
+        line = line.strip()
+        ACCESS_KEY = line
+        line = in_file.readline()
+        line = line.strip()
+        SECRET_KEY = line
+    else:
+        ACCESS_KEY = input('access_key\n')
+        keys.append(ACCESS_KEY)
+        SECRET_KEY = input('secret_key\n')
+        keys.append(SECRET_KEY)
+        with open('aws.txt','w') as out_file:
+            for line in keys:
+                out_file.write(line)
+                out_file.write('\n')
+    
     source = 'Videos/'
     destination = 'Frames/{}'.format(file_name)
     local_directory = file_name

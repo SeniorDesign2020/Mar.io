@@ -4,6 +4,9 @@ import boto3
 import shutil
 import tqdm
 from botocore.exceptions import NoCredentialsError
+import zipfile
+import progressbar
+import shutil
 
 def FrameCapture(file_name):
     folders = []
@@ -18,9 +21,12 @@ def FrameCapture(file_name):
             os.mkdir('{}/folder{}'.format(file_name,folderCount))
             folders.append('{}/folder{}'.format(file_name,folderCount))
         success, image = vid.read()
-        cv2.imwrite('{}/folder{}/frame{}.jpg'.format(file_name,folderCount,count), image)
-        count += 1
-    zip_folders(folders)
+        try:
+            cv2.imwrite('{}/folder{}/frame{}.jpg'.format(file_name,folderCount,count), image)
+            count += 1
+        except:
+            continue
+    #zip_folders(folders)
 
 def zip_folders(folders):
     print('Zipping...')
@@ -51,7 +57,45 @@ def upload_to_aws(client, local_directory, bucket, destination):
                 print("Uploading %s..." % s3_path)
                 client.upload_file(local_path, bucket, s3_path)
 
-if __name__ == '__main__':
+
+def retrieve_file_paths(dirName):
+ 
+  # setup file paths variable
+  filePaths = []
+   
+  # Read all directory, subdirectories and file lists
+  for root, directories, files in os.walk(dirName):
+    for filename in files:
+        # Create the full filepath by using os module.
+        filePath = os.path.join(root, filename)
+        filePaths.append(filePath)
+         
+  # return all paths
+  return filePaths
+
+def zip_dir(dir_name):
+# Assign the name of the directory to zip
+#   dir_name = 'mydir'
+   
+  # Call the function to retrieve all files and folders of the assigned directory
+  filePaths = retrieve_file_paths(dir_name)
+
+  # printing the list of all files to be zipped
+#   print('The following list of files will be zipped:')
+#   for fileName in filePaths:
+#     print(fileName)
+     
+  # writing files to a zipfile
+  zip_file = zipfile.ZipFile(dir_name+'.zip', 'w')
+  with zip_file:
+    # writing each file one by one
+    for file in filePaths:
+      zip_file.write(file)
+       
+  print(dir_name+'.zip file is created successfully!')
+
+
+if __name__ == '__main__':D
 
     file_name = input('video_name')
     keys = []
@@ -71,17 +115,42 @@ if __name__ == '__main__':
             for line in keys:
                 out_file.write(line)
                 out_file.write('\n')
-    
+
     source = 'Videos/'
     destination = 'Frames/{}'.format(file_name)
     local_directory = file_name
     bucket = 'senior-design33'
     client = boto3.client('s3', aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY)
 
-
-    client.download_file(bucket, source + file_name + '.mp4', file_name + '.mp4')
+    #Download Video from AWS
+    client.download_file(bucket, source + '{}.mp4'.format(file_name), '{}.mp4'.format(file_name))
     print('{}.mp4 downloaded to local'.format(file_name))
+
+    #Video to Frames
     FrameCapture(file_name)
     print('{}.mp4 converted to frames'. format(file_name))
-    upload_to_aws(client, local_directory, bucket, destination)
-    print('{} uploaded to AWS')
+
+    
+    #Create Zip
+    zip_dir(file_name)
+
+    #Upload to AWS w/ Progress Bar
+    filesize = os.stat('{}.zip'.format(file_name)).st_size
+    print("\nuploading {}.zip | size: {}".format(file_name, filesize))
+    up_progress = progressbar.AnimatedProgressBar(end=filesize, width=50)
+    def upload_progress(chunk):
+        up_progress + chunk
+        up_progress.show_progress()
+    client.upload_file('{}.zip'.format(file_name), bucket, '{}.zip'.format(destination), Callback=upload_progress)
+    print("\n{}.zip uploaded to S3 bucket:{} path:{}.zip".format(file_name, bucket, destination))
+
+    #Clean Up Local Directory
+    clean = input("Clean Up Directory? (y/n): ")
+    if clean == 'y':
+        os.remove('{}.mp4'.format(file_name))
+        os.remove('{}.zip'.format(file_name))
+        shutil.rmtree(file_name)
+        shutil.rmtree('__pycache__')
+    else:
+        exit()
+    

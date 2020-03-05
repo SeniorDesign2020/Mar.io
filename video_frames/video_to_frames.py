@@ -102,8 +102,8 @@ if __name__ == '__main__':
 
     file_name = input('video_name\n')
     keys = []
-    if os.path.isfile('/home/seniordesign/Documents/srdesign/Mar.io/aws.txt'):
-        with open('/home/seniordesign/Documents/srdesign/Mar.io/aws.txt','r') as in_file:
+    if os.path.isfile('../aws.txt'):
+        with open('../aws.txt','r') as in_file:
             line = in_file.readline()
             line = line.strip()
             ACCESS_KEY = line
@@ -115,7 +115,7 @@ if __name__ == '__main__':
         keys.append(ACCESS_KEY)
         SECRET_KEY = input('secret_key\n')
         keys.append(SECRET_KEY)
-        with open('/home/seniordesign/Documents/srdesign/Mar.io/aws.txt','w') as out_file:
+        with open('../aws.txt','w') as out_file:
             for line in keys:
                 out_file.write(line)
                 out_file.write('\n')

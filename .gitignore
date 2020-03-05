@@ -20,5 +20,6 @@ __pycache__
 aws.txt
 #Images
 *.jpg
+*.png
 #emacs
 *~

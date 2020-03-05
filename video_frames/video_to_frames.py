@@ -26,12 +26,15 @@ def FrameCapture(file_name):
             count += 1
         except:
             continue
-    #zip_folders(folders)
+    
+    zip_folders(folders)
+
+    return folders
 
 def zip_folders(folders):
     print('Zipping...')
-    for folder in tqdm(folders):
-        shutil.make_archive('{}'.format(folder),'zip','{}'.format(folder_name))
+    for folder in folders:
+        shutil.make_archive('{}'.format(folder),'zip','{}'.format(folder))
         shutil.rmtree('{}'.format(folder))
         
 
@@ -95,62 +98,64 @@ def zip_dir(dir_name):
   print(dir_name+'.zip file is created successfully!')
 
 
-if __name__ == '__main__':D
+if __name__ == '__main__':
 
-    file_name = input('video_name')
+    file_name = input('video_name\n')
     keys = []
-    if os.path.isfile('aws.txt') as in_file:
-        line = in_file.readline()
-        line = line.strip()
-        ACCESS_KEY = line
-        line = in_file.readline()
-        line = line.strip()
-        SECRET_KEY = line
+    if os.path.isfile('/home/seniordesign/Documents/srdesign/Mar.io/aws.txt'):
+        with open('/home/seniordesign/Documents/srdesign/Mar.io/aws.txt','r') as in_file:
+            line = in_file.readline()
+            line = line.strip()
+            ACCESS_KEY = line
+            line = in_file.readline()
+            line = line.strip()
+            SECRET_KEY = line
     else:
         ACCESS_KEY = input('access_key\n')
         keys.append(ACCESS_KEY)
         SECRET_KEY = input('secret_key\n')
         keys.append(SECRET_KEY)
-        with open('aws.txt','w') as out_file:
+        with open('/home/seniordesign/Documents/srdesign/Mar.io/aws.txt','w') as out_file:
             for line in keys:
                 out_file.write(line)
                 out_file.write('\n')
 
     source = 'Videos/'
-    destination = 'Frames/{}'.format(file_name)
+    destination = 'Frames'
     local_directory = file_name
     bucket = 'senior-design33'
     client = boto3.client('s3', aws_access_key_id=ACCESS_KEY,aws_secret_access_key=SECRET_KEY)
-
     #Download Video from AWS
     client.download_file(bucket, source + '{}.mp4'.format(file_name), '{}.mp4'.format(file_name))
     print('{}.mp4 downloaded to local'.format(file_name))
 
     #Video to Frames
-    FrameCapture(file_name)
+    folders = FrameCapture(file_name)
     print('{}.mp4 converted to frames'. format(file_name))
 
     
     #Create Zip
-    zip_dir(file_name)
-
+    #zip_dir(file_name)
+    
     #Upload to AWS w/ Progress Bar
-    filesize = os.stat('{}.zip'.format(file_name)).st_size
-    print("\nuploading {}.zip | size: {}".format(file_name, filesize))
+    filesize = os.stat('{}'.format(file_name)).st_size
+    print("\nuploading {} | size: {}".format(file_name, filesize))
     up_progress = progressbar.AnimatedProgressBar(end=filesize, width=50)
     def upload_progress(chunk):
         up_progress + chunk
         up_progress.show_progress()
-    client.upload_file('{}.zip'.format(file_name), bucket, '{}.zip'.format(destination), Callback=upload_progress)
-    print("\n{}.zip uploaded to S3 bucket:{} path:{}.zip".format(file_name, bucket, destination))
-
+    for folder in folders:
+        client.upload_file('{}.zip'.format(folder), bucket, '{}/{}.zip'.format(destination,folder), Callback=upload_progress)
+    print("\n{}.zip uploaded to S3 bucket:{} path:{}".format(file_name, bucket, destination))
+    
     #Clean Up Local Directory
+    
     clean = input("Clean Up Directory? (y/n): ")
     if clean == 'y':
         os.remove('{}.mp4'.format(file_name))
-        os.remove('{}.zip'.format(file_name))
+        #os.remove('{}'.format(file_name))
         shutil.rmtree(file_name)
-        shutil.rmtree('__pycache__')
+        #shutil.rmtree('__pycache__')
     else:
         exit()
     

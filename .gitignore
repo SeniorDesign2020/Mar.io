@@ -15,7 +15,7 @@ logs
 .idea/
 .vscode/
 *.sw*
-
+__pycache__
 .DS_Store
 aws.txt
 #Images

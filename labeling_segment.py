@@ -1,7 +1,5 @@
 import numpy as np
 import cv2
-import matplotlib.pyplot as plt
-import os
 '''
 input_file = input('input filename\n')
 num_images =  len([f for f in os.listdir(input_file)if os.path.isfile(os.path.join(input_file, f))])
@@ -34,7 +32,7 @@ for i in range(num_images):
     cv2.imwrite('{}/frame_{}.jpg'.format(output_file,i),dst)'''
 
 def filtering(filename):
-    img = cv2.imread('frame.jpg')
+    img = cv2.imread(filename)
     shape = np.shape(img)
     height = int(shape[0]/2)
     cropped = img[height:shape[0],:]
@@ -48,11 +46,9 @@ def filtering(filename):
     center = np.uint8(center)
     res = center[label.flatten()]
     result_image = res.reshape((img.shape))
-    figure_size = 15
 
-    output_image = cv2.medianBlur(result_image,55)
+    output_image = cv2.medianBlur(result_image, 55)
     return output_image
-    #cv2.imwrite('fil1_image.jpg',output_image)
     
 
 if __name__ == '__main__':

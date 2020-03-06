@@ -52,11 +52,8 @@ def labelling_frames(video_name, folder_name, s3_client, bucket):
                 image_label = done(image_pil)
                 image_label.save('{}/{}'.format(folder_name, frame_number))
             except:
-                key = s3_client.lookup(obj['Key'])
-                if key.size <= 0:
-                    s3_client.delete_object(Bucket=bucket, Key=obj['Key'])
-                else:
-                    print('Cant label the frame {} \n Skipping for now'.format(frame_number))
+                print('Cant label the frame {} \n Skipping for now'.format(frame_number))
+                print('Go to aws console and check frame size, if zero the please delete')
 
 def intialize_labelling():
     video_name = input('video_name\n')
